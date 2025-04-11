@@ -1,15 +1,14 @@
 import os
 import sys
+import random
 import numpy as np
 import pandas as pd
 from tqdm import tqdm
-import random
 
 from music21 import *
 
 #%% All Bach Compositions summary
 paths = corpus.getComposer('bach')
-
 
 filepath = []
 title = []
@@ -43,3 +42,36 @@ summary_df['parts'] = parts
 summary_df['offsets'] = offsets
 
 summary_df.to_csv(r"bach_summary.csv")
+
+#%% Play a 4-part Bach chorale
+paths = corpus.getComposer('bach')
+
+for path in tqdm(paths):
+   
+    sBach = corpus.parse(str(path))
+    if len(sBach.parts) == 4:
+        break
+
+# Show piece in MuseScore Studio
+sBach.show()
+
+# Play in a media player
+sBach.show('midi')
+
+#%% Create a 4 part chorale and play it
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ 
