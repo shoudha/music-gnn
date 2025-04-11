@@ -46,17 +46,17 @@ summary_df.to_csv(r"bach_summary.csv")
 #%% Play a 4-part Bach chorale
 paths = corpus.getComposer('bach')
 
-for path in tqdm(paths):
+for path in paths:
    
     sBach = corpus.parse(str(path))
     if len(sBach.parts) == 4:
         break
 
 # Show piece in MuseScore Studio
-sBach.show()
+# sBach.show()
 
 # Play in a media player
-sBach.show('midi')
+# sBach.show('midi')
 
 #%% Create a 4 part chorale and play it
 
