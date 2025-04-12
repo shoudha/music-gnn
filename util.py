@@ -38,7 +38,7 @@ pitch_vocab = {'rest': 0,
                'E3': 13, 'F3': 14, 'G-3': 15, 'G3': 16, 'A-3': 17, 'A3': 18, 
                'B-3': 19, 'B3': 20, 'C4': 21, 'D-4': 22, 'D4': 23, 'E-4': 24, 
                'E4': 25, 'F4': 26, 'G-4': 27, 'G4': 28, 'A-4': 29, 'A4': 30, 
-               'B-4': 31, 'B4': 32, 'C5': 33}
+               'B-4': 31, 'B4': 32, 'C5': 33, 'cont':34}
 
 
 def generate_random_note_and_duration_dicts(parts, note_counts):
@@ -199,3 +199,78 @@ def encode_sequences(note_dict, duration_dict):
 
     return pitch2idx, duration2idx, encoded_notes, encoded_durations
 
+def extract_notes_and_durations_cont(score, time_step=0.5):
+    """
+    Extract aligned note and duration sequences from a music21 Score.
+    Long notes are split into time_step units using 'cont' markers.
+
+    Args:
+        score (music21.stream.Score): Input score.
+        time_step (float): Minimum temporal resolution (e.g., 0.5 for eighth notes).
+
+    Returns:
+        (note_dict, duration_dict): aligned and flattened with time_step resolution
+    """
+    note_dict = {}
+    duration_dict = {}
+
+    for part in score.parts:
+        part_id = part.id or f"Part{len(note_dict)+1}"
+        note_dict[part_id] = []
+        duration_dict[part_id] = []
+
+        for n in part.recurse().notesAndRests:
+            dur = n.quarterLength
+            steps = int(dur / time_step)
+            if steps < 1:
+                steps = 1  # avoid division error
+
+            if n.isRest:
+                note_symbol = 'rest'
+            else:
+                note_symbol = n.nameWithOctave
+
+            note_dict[part_id].append(note_symbol)
+            duration_dict[part_id].append(time_step)
+
+            # Fill continuation steps
+            for _ in range(1, steps):
+                note_dict[part_id].append('cont')
+                duration_dict[part_id].append(time_step)
+
+    return note_dict, duration_dict
+
+
+def reconstruct_score_cont(note_dict, time_step=0.5):
+    from music21 import stream, note
+    score = stream.Score()
+
+    for part_name in note_dict:
+        p = stream.Part()
+        p.id = part_name
+        p.partName = part_name.capitalize()
+
+        notes = note_dict[part_name]
+        i = 0
+        while i < len(notes):
+            symbol = notes[i]
+            if symbol == 'cont':
+                i += 1
+                continue
+
+            dur = time_step
+            j = i + 1
+            while j < len(notes) and notes[j] == 'cont':
+                dur += time_step
+                j += 1
+
+            if symbol == 'rest':
+                p.append(note.Rest(quarterLength=dur))
+            else:
+                p.append(note.Note(symbol, quarterLength=dur))
+
+            i = j
+
+        score.append(p)
+
+    return score
