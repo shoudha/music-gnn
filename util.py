@@ -33,12 +33,40 @@ from music21 import stream, note, converter, pitch
 #     return sc
 
 pitch_vocab = {'rest': 0, 
-               'E2': 1, 'F2': 2, 'G-2': 3, 'G2': 4, 'A-2': 5, 'A2': 6, 
-               'B-2': 7, 'B2': 8, 'C3': 9, 'D-3': 10, 'D3': 11, 'E-3': 12, 
-               'E3': 13, 'F3': 14, 'G-3': 15, 'G3': 16, 'A-3': 17, 'A3': 18, 
-               'B-3': 19, 'B3': 20, 'C4': 21, 'D-4': 22, 'D4': 23, 'E-4': 24, 
-               'E4': 25, 'F4': 26, 'G-4': 27, 'G4': 28, 'A-4': 29, 'A4': 30, 
-               'B-4': 31, 'B4': 32, 'C5': 33, 'cont':34}
+               'E2': 1, 
+               'F2': 2, 
+               'G-2': 3, 
+               'G2': 4, 
+               'A-2': 5, 
+               'A2': 6, 
+               'B-2': 7, 
+               'B2': 8, 
+               'C3': 9, 
+               'D-3': 10, 
+               'D3': 11, 
+               'E-3': 12, 
+               'E3': 13, 
+               'F3': 14, 
+               'G-3': 15, 
+               'G3': 16, 
+               'A-3': 17, 
+               'A3': 18, 
+               'B-3': 19, 
+               'B3': 20, 
+               'C4': 21, 
+               'D-4': 22, 
+               'D4': 23, 
+               'E-4': 24, 
+               'E4': 25, 
+               'F4': 26, 
+               'G-4': 27, 
+               'G4': 28, 
+               'A-4': 29, 
+               'A4': 30, 
+               'B-4': 31, 
+               'B4': 32, 
+               'C5': 33, 
+               'cont':34}
 
 
 def generate_random_note_and_duration_dicts(parts, note_counts):
@@ -202,14 +230,14 @@ def encode_sequences(note_dict, duration_dict):
 def extract_notes_and_durations_cont(score, time_step=0.5):
     """
     Extract aligned note and duration sequences from a music21 Score.
-    Long notes are split into time_step units using 'cont' markers.
+    Long notes are split into time_step units using 'cont<NoteName>' markers.
 
     Args:
-        score (music21.stream.Score): Input score.
-        time_step (float): Minimum temporal resolution (e.g., 0.5 for eighth notes).
+        score (music21.stream.Score): Input Score.
+        time_step (float): Temporal resolution (e.g., 0.5 = eighth notes).
 
     Returns:
-        (note_dict, duration_dict): aligned and flattened with time_step resolution
+        (note_dict, duration_dict): Dicts of aligned note names and durations.
     """
     note_dict = {}
     duration_dict = {}
@@ -223,26 +251,38 @@ def extract_notes_and_durations_cont(score, time_step=0.5):
             dur = n.quarterLength
             steps = int(dur / time_step)
             if steps < 1:
-                steps = 1  # avoid division error
+                steps = 1
 
             if n.isRest:
-                note_symbol = 'rest'
-            else:
-                note_symbol = n.nameWithOctave
+                note_name = 'rest'
+            elif n.isNote:
+                note_name = n.nameWithOctave
 
-            note_dict[part_id].append(note_symbol)
+            note_dict[part_id].append(note_name)
             duration_dict[part_id].append(time_step)
 
-            # Fill continuation steps
             for _ in range(1, steps):
-                note_dict[part_id].append('cont')
+                cont_token = f"cont{note_name}"
+                note_dict[part_id].append(cont_token)
                 duration_dict[part_id].append(time_step)
 
-    return note_dict, duration_dict
+    return note_dict
+
 
 
 def reconstruct_score_cont(note_dict, time_step=0.5):
+    """
+    Reconstruct a music21 Score from note_dict with 'cont<Note>' tokens.
+
+    Args:
+        note_dict (dict): {part_name: [note names or 'rest' or 'cont<Note>']}
+        time_step (float): Duration of each time step.
+
+    Returns:
+        music21.stream.Score
+    """
     from music21 import stream, note
+
     score = stream.Score()
 
     for part_name in note_dict:
@@ -254,13 +294,14 @@ def reconstruct_score_cont(note_dict, time_step=0.5):
         i = 0
         while i < len(notes):
             symbol = notes[i]
-            if symbol == 'cont':
+            if symbol.startswith('cont'):
                 i += 1
                 continue
 
+            # Determine how long this note continues
             dur = time_step
             j = i + 1
-            while j < len(notes) and notes[j] == 'cont':
+            while j < len(notes) and notes[j] == f'cont{symbol}':
                 dur += time_step
                 j += 1
 

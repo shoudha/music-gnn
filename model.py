@@ -116,15 +116,15 @@ if __name__=='__main__':
         if len(sBach.parts) == 4:
             break
         
-    note_dict, duration_dict = util.extract_notes_and_durations(sBach)
+    note_dict, duration_dict = util.extract_notes_and_durations_cont(sBach)
     pitch2idx, duration2idx, encoded_notes, encoded_durations = util.encode_sequences(note_dict, duration_dict)
 
-    # Prepare tensors
-    Xn, Xd, yn, yd = create_multivoice_training_data(encoded_notes, encoded_durations, sequence_length=8)
+    # # Prepare tensors
+    # Xn, Xd, yn, yd = create_multivoice_training_data(encoded_notes, encoded_durations, sequence_length=8)
     
-    # Model
-    note_vocab_size = len(pitch2idx)
-    dur_vocab_size = len(duration2idx)
+    # # Model
+    # note_vocab_size = len(pitch2idx)
+    # dur_vocab_size = len(duration2idx)
     
-    model = MultiPartGenerator(note_vocab_size, dur_vocab_size)
-    train_model(model, Xn, Xd, yn, yd, epochs=20)
+    # model = MultiPartGenerator(note_vocab_size, dur_vocab_size)
+    # train_model(model, Xn, Xd, yn, yd, epochs=20)

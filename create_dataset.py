@@ -46,26 +46,26 @@ import util
 # summary_df.to_csv(r"bach_summary.csv")
 
 #%% Play a 4-part Bach chorale
-paths = corpus.getComposer('bach')
+# paths = corpus.getComposer('bach')
 
-for path in paths:
+# for path in paths:
    
-    sBach = corpus.parse(str(path))
-    if len(sBach.parts) == 4:
-        break
+#     sBach = corpus.parse(str(path))
+#     if len(sBach.parts) == 4:
+#         break
 
-# Show piece in MuseScore Studio
-# sBach.show()
+# # Show piece in MuseScore Studio
+# # sBach.show()
 
-# Play in a media player
-sBach.show('midi')
+# # Play in a media player
+# sBach.show('midi')
 
-# Extract notes and durations
-note_dict, duration_dict = util.extract_notes_and_durations_cont(sBach)
+# # Extract notes and durations
+# note_dict, duration_dict = util.extract_notes_and_durations_cont(sBach)
 
-# Reconstruct the score from the notes and duration dicts
-new_score = util.reconstruct_score_cont(note_dict, )
-new_score.show('midi')
+# # Reconstruct the score from the notes and duration dicts
+# new_score = util.reconstruct_score_cont(note_dict, )
+# new_score.show('midi')
 
 #%% Create a 4 part chorale and play it
 # note_dict_rnd, duration_dict_rnd = util.generate_random_note_and_duration_dicts(
@@ -88,12 +88,25 @@ new_score.show('midi')
 
 
 
+#%% All Bach Compositions encoded notes
+paths = corpus.getComposer('bach')
+chorale_parts = ['Soprano', 'Alto', 'Tenor', 'Bass']
+all_bachs = {}
 
+# paths = [r'C:/Users/14694/.pyenv/pyenv-win/versions/3.9.13/Lib/site-packages/music21/corpus/bach/bwv248.9-1.mxl']
 
-
-
-
-
+for i, path in tqdm(enumerate(paths)):
+   
+    sBach = corpus.parse(str(path))
+    sBach_parts = [s.partName for s in sBach.parts]
+    
+    has_parts = [s in sBach_parts for s in chorale_parts]
+    
+    if all(has_parts):
+        note_dict = util.extract_notes_and_durations_cont(sBach)
+        note_dict = {key: note_dict[key] for key in chorale_parts}
+        all_bachs[i] = {}
+        all_bachs[i]['note_dict'] = note_dict
 
 
 
