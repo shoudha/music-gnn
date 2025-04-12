@@ -41,7 +41,8 @@ chorale.append(tenor)
 chorale.append(bass)
 
 # Show the chorale in a music notation format (MIDI or musicXML)
-chorale.show()
+# chorale.show()
 
 # Alternatively, you can generate a MIDI file for playback
 chorale.write('midi', fp='four_part_chorale.mid')
+chorale.show('midi', )
