@@ -41,6 +41,7 @@ chorale.append(tenor)
 chorale.append(bass)
 
 # Show the chorale in a music notation format (MIDI or musicXML)
+# Needs installation of Music Core software
 # chorale.show()
 
 # Alternatively, you can generate a MIDI file for playback
